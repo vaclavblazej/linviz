@@ -5,9 +5,7 @@ import spacegame.model.Model;
 import spacegame.view.GameWindow;
 
 /**
- * @author Patrik Faistaver
  * @author Václav Blažej
- * @author Štěpán Plachý
  */
 public class Main {
 

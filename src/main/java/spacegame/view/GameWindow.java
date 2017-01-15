@@ -9,9 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * @author Patrik Faistaver
  * @author Václav Blažej
- * @author Štěpán Plachý
  */
 public class GameWindow extends JFrame {
 
@@ -24,8 +22,6 @@ public class GameWindow extends JFrame {
 
         View gamePlane = new View(model, controller, settings);
         add(gamePlane);
-        EvolutionView evolutionView = new EvolutionView(gamePlane, model, controller, settings);
-        add(evolutionView);
         pack();
 
         setFocusable(true);

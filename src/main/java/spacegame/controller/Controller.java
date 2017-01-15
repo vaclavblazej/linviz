@@ -6,9 +6,7 @@ import spacegame.model.Model;
 import javax.swing.*;
 
 /**
- * @author Patrik Faistaver
  * @author Václav Blažej
- * @author Štěpán Plachý
  */
 public class Controller {
 
