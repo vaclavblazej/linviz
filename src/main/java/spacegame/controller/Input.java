@@ -21,9 +21,6 @@ public class Input implements KeyListener {
     public void keyTyped(KeyEvent e) {
     }
 
-    public void computeDirection(Integer playerId) {
-    }
-
     @Override
     public void keyPressed(KeyEvent e) {
     }

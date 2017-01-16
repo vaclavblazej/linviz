@@ -3,6 +3,7 @@ package spacegame;
 import java.awt.*;
 import java.io.*;
 import java.util.Random;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -12,6 +13,8 @@ public final class Common {
 
     public static Random random = new Random();
     private static final Supplier<Float> func = () -> ((random.nextFloat() % 0.4f) + 0.6f) % 1;
+
+    public static Function<Double, Integer> toInt = Double::intValue;
 
     public static double sigmoid(double value) {
         return 1 / (1 + Math.exp(-value));

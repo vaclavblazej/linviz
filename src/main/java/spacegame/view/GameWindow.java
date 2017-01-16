@@ -14,17 +14,15 @@ import java.awt.*;
 public class GameWindow extends JFrame {
 
     public GameWindow(Model model, Controller controller, Settings settings) {
-        super("Cervi 1.0");
+        super("space-game");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setVisible(true);
-        setResizable(false);
-        setLayout(new FlowLayout(SwingConstants.HORIZONTAL));
+        setLayout(new BorderLayout());
+        setFocusable(true);
 
         View gamePlane = new View(model, controller, settings);
         add(gamePlane);
         pack();
-
-        setFocusable(true);
 
         Input input = new Input(model, settings);
         this.addKeyListener(input);
