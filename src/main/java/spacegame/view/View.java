@@ -54,10 +54,12 @@ public class View extends JPanel implements ActionListener {
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON); // Set anti-alias for text
         gg.setColor(Color.BLACK);
         gg.fillRect(0, 0, getWidth(), getHeight());
-        painter.paint(gg);
+        painter.paint(gg, settings.getViewTransform());
         g.setColor(Color.GREEN);
         g.setTransform(defaultTransform);
-        g.drawString("FPS " + fps, 10, 20);
+        if (settings.isShowInfo()) {
+            g.drawString("FPS " + fps, 10, 20);
+        }
         fpscnt++;
     }
 

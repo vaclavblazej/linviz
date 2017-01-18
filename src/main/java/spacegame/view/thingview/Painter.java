@@ -23,7 +23,7 @@ public class Painter {
         this.model = model;
     }
 
-    public void paint(Graphics gg) {
+    public void paint(Graphics gg, AffineTransform view) {
         Graphics2D g = (Graphics2D) gg;
         final java.util.List<BaseShape> shapes = model.getShapes();
         for (BaseShape shape : shapes) {
@@ -31,8 +31,9 @@ public class Painter {
             if (shape instanceof VectorShape) {
                 drawVectorShape(g, (VectorShape) shape);
             } else {
-                System.out.println("not drawable shape: " + shape.getClass());
+                System.out.println("Draw method for this class is not implemented: " + shape.getClass());
             }
+            g.setTransform(view);
         }
     }
 

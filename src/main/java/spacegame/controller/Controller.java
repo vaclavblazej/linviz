@@ -31,7 +31,9 @@ public class Controller {
     private void simulateMovement() {
         tickNumber++;
         for (BaseShape shape : model.getShapes()) {
-            shape.rotation += 0.01;
+            shape.rotation += shape.angularVelocity;
+            shape.position.x += shape.velocity.x;
+            shape.position.y += shape.velocity.y;
         }
     }
 }

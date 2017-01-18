@@ -26,6 +26,8 @@ public class GameWindow extends JFrame {
 
         Input input = new Input(model, settings);
         this.addKeyListener(input);
+        this.addMouseListener(input);
         gamePlane.addKeyListener(input);
+        gamePlane.addMouseListener(input);
     }
 }
