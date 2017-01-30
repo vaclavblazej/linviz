@@ -21,4 +21,12 @@ public final class Point<T> {
     public <Q> Q getY(Function<T, Q> function) {
         return function.apply(y);
     }
+
+    @Override
+    public String toString() {
+        return "Point{" +
+                "x=" + x +
+                ", y=" + y +
+                '}';
+    }
 }

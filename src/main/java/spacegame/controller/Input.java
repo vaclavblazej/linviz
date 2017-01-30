@@ -3,26 +3,22 @@ package spacegame.controller;
 import spacegame.Settings;
 import spacegame.model.Model;
 import spacegame.model.basics.Point;
-import spacegame.model.things.BaseShape;
 import spacegame.model.things.Rectangle;
 import spacegame.view.View;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 
 /**
  * @author Václav Blažej
  */
-public class Input implements KeyListener, MouseListener {
+public class Input implements KeyListener, MouseListener, MouseWheelListener {
 
     private final Model model;
     private final Settings settings;
     private Point<Integer> last;
-    private BaseShape lastShape;
     private View view;
+    private double scaleSpeed = 1.3;
 
     public Input(View view, Model model, Settings settings) {
         this.view = view;
@@ -39,7 +35,6 @@ public class Input implements KeyListener, MouseListener {
     public void keyPressed(KeyEvent e) {
         final AffineTransform transform = settings.getViewTransform();
         double speed = 3;
-        double scaleSpeed = 1.3;
         switch (e.getKeyCode()) {
             case 107: { // +
                 transform.setToScale(transform.getScaleX() * scaleSpeed, transform.getScaleY() * scaleSpeed);
@@ -73,6 +68,10 @@ public class Input implements KeyListener, MouseListener {
                 view.nextState();
                 break;
             }
+            case 67: { // c (center view on everything)
+                view.center();
+                break;
+            }
             default:
                 System.out.println("input not known key: " + e.getKeyChar() + ", " + e.getKeyCode());
         }
@@ -88,19 +87,22 @@ public class Input implements KeyListener, MouseListener {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        final Point<Double> position = new Point<>((double) e.getX(), (double) e.getY());
-        lastShape = new Rectangle(position, 0., 20.);
-        model.addShape(view.getFrame(), lastShape);
+        final Point<Double> position = positionInView(e);
+        model.addShape(view.getFrame(), new Rectangle(position, 0., 20.));
         last = new Point<>(e.getX(), e.getY());
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (last != null) {
-            lastShape.velocity.x += (e.getX() - last.x) / 40.;
-            lastShape.velocity.y += (e.getY() - last.y) / 40.;
-            last = null;
-        }
+    }
+
+    public Point<Double> positionInView(MouseEvent e) {
+        final java.awt.Point point = e.getPoint();
+        final AffineTransform viewTransform = settings.getViewTransform();
+        final Point<Double> res = new Point<>(0., 0.);
+        res.x = (point.x - viewTransform.getTranslateX()) / viewTransform.getScaleX();
+        res.y = (point.y - viewTransform.getTranslateY()) / viewTransform.getScaleY();
+        return res;
     }
 
     @Override
@@ -109,5 +111,15 @@ public class Input implements KeyListener, MouseListener {
 
     @Override
     public void mouseExited(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        final AffineTransform transform = settings.getViewTransform();
+        if (e.getWheelRotation() == 1) {
+            transform.setToScale(transform.getScaleX() / scaleSpeed, transform.getScaleY() / scaleSpeed);
+        } else {
+            transform.setToScale(transform.getScaleX() * scaleSpeed, transform.getScaleY() * scaleSpeed);
+        }
     }
 }
