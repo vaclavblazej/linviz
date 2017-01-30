@@ -1,6 +1,7 @@
 package spacegame;
 
 import spacegame.controller.Controller;
+import spacegame.controller.StdInput;
 import spacegame.model.Model;
 import spacegame.view.GameWindow;
 
@@ -14,5 +15,6 @@ public class Main {
         Model model = new Model(settings);
         Controller controller = new Controller(model, settings);
         new GameWindow(model, controller, settings);
+        StdInput.loadInput(model);
     }
 }

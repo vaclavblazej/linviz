@@ -1,12 +1,14 @@
 package spacegame.model.basics;
 
+import spacegame.model.things.BaseShape;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Václav Blažej
  */
-public final class Polygon {
+public final class Polygon extends BaseShape{
 
     private final List<Point<Double>> points;
 
