@@ -17,4 +17,9 @@ public class Rectangle extends VectorShape {
         polygon.addPoint(new Point<>(-size, size));
         addPolygon(polygon);
     }
+
+    @Override
+    public String toString() {
+        return "Rectangle{} " + super.toString();
+    }
 }

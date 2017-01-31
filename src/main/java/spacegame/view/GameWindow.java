@@ -30,5 +30,6 @@ public class GameWindow extends JFrame {
         gamePlane.addKeyListener(input);
         gamePlane.addMouseListener(input);
         gamePlane.addMouseWheelListener(input);
+        gamePlane.addMouseMotionListener(input);
     }
 }

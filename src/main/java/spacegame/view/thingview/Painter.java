@@ -28,7 +28,7 @@ public class Painter {
     public void paint(Graphics gg, View view, AffineTransform transform) {
         Graphics2D g = (Graphics2D) gg;
         final java.util.List<BaseShape> shapes = model.getShapes(view.getFrame());
-        g.setColor(Color.WHITE);
+        g.setColor(new Color(1f, 1f, 1f, 0.8f));
         for (BaseShape shape : shapes) {
             g.setTransform(transform);
             addTrans(g, shape);
@@ -51,15 +51,15 @@ public class Painter {
 
     private void drawPolygon(Graphics2D g, Polygon polygon) {
         final List<Point<Double>> points = polygon.getPoints();
-        final int size = points.size();
-        for (int i = 0; i < size; i++) {
-            drawLine(g, points.get(i), points.get((i + 1) % size));
+        final java.awt.Polygon p = new java.awt.Polygon();
+        for (Point<Double> point : points) {
+            p.addPoint(point.x.intValue(), point.y.intValue());
         }
+        g.fillPolygon(p);
     }
 
     private void drawVectorShape(Graphics2D g, VectorShape vectorShape) {
         final java.util.List<spacegame.model.basics.Polygon> polygons = vectorShape.getPolygons();
-        g.setColor(Color.WHITE);
         for (Polygon polygon : polygons) {
             drawPolygon(g, polygon);
         }

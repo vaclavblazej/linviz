@@ -12,19 +12,20 @@ import java.awt.geom.AffineTransform;
 /**
  * @author Václav Blažej
  */
-public class Input implements KeyListener, MouseListener, MouseWheelListener {
+public class Input implements KeyListener, MouseListener, MouseWheelListener, MouseMotionListener {
 
     private final Model model;
     private final Settings settings;
-    private Point<Integer> last;
     private View view;
     private double scaleSpeed = 1.3;
+    private Point<Double> startDrag = new Point<>(0d, 0d);
+    private Point<Double> movedDrag = new Point<>(0d, 0d);
+    private Boolean drag = false;
 
     public Input(View view, Model model, Settings settings) {
         this.view = view;
         this.model = model;
         this.settings = settings;
-        last = null;
     }
 
     @Override
@@ -37,27 +38,27 @@ public class Input implements KeyListener, MouseListener, MouseWheelListener {
         double speed = 3;
         switch (e.getKeyCode()) {
             case 107: { // +
-                transform.setToScale(transform.getScaleX() * scaleSpeed, transform.getScaleY() * scaleSpeed);
+                view.zoomView(scaleSpeed);
                 break;
             }
             case 109: { // -
-                transform.setToScale(transform.getScaleX() / scaleSpeed, transform.getScaleY() / scaleSpeed);
+                view.zoomView(1 / scaleSpeed);
                 break;
             }
             case 68: { // a
-                transform.translate(-speed, 0.0);
+                transform.translate(-speed / transform.getScaleX(), 0.0);
                 break;
             }
             case 65: { // d
-                transform.translate(+speed, 0.0);
+                transform.translate(+speed / transform.getScaleX(), 0.0);
                 break;
             }
             case 87: { // w
-                transform.translate(0.0, +speed);
+                transform.translate(0.0, +speed / transform.getScaleX());
                 break;
             }
             case 83: { // s
-                transform.translate(0.0, -speed);
+                transform.translate(0.0, -speed / transform.getScaleX());
                 break;
             }
             case 37: { // <-
@@ -87,9 +88,9 @@ public class Input implements KeyListener, MouseListener, MouseWheelListener {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        final Point<Double> position = positionInView(e);
-        model.addShape(view.getFrame(), new Rectangle(position, 0., 20.));
-        last = new Point<>(e.getX(), e.getY());
+        if ((e.getModifiersEx() & MouseEvent.BUTTON3_DOWN_MASK) != 0) {
+            model.addShape(new Rectangle(positionInView(e), 0d, 20d));
+        }
     }
 
     @Override
@@ -97,12 +98,7 @@ public class Input implements KeyListener, MouseListener, MouseWheelListener {
     }
 
     public Point<Double> positionInView(MouseEvent e) {
-        final java.awt.Point point = e.getPoint();
-        final AffineTransform viewTransform = settings.getViewTransform();
-        final Point<Double> res = new Point<>(0., 0.);
-        res.x = (point.x - viewTransform.getTranslateX()) / viewTransform.getScaleX();
-        res.y = (point.y - viewTransform.getTranslateY()) / viewTransform.getScaleY();
-        return res;
+        return view.positionInView(new Point<>((double) e.getX(), (double) e.getY()));
     }
 
     @Override
@@ -115,11 +111,29 @@ public class Input implements KeyListener, MouseListener, MouseWheelListener {
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        final AffineTransform transform = settings.getViewTransform();
         if (e.getWheelRotation() == 1) {
-            transform.setToScale(transform.getScaleX() / scaleSpeed, transform.getScaleY() / scaleSpeed);
+            view.zoomView(1 / scaleSpeed);
         } else {
-            transform.setToScale(transform.getScaleX() * scaleSpeed, transform.getScaleY() * scaleSpeed);
+            view.zoomView(scaleSpeed);
         }
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        if ((e.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) != 0) {
+            if (drag) {
+                Point<Double> now = positionInView(e);
+                Point<Double> move = new Point<>(now.x - startDrag.x, now.y - startDrag.y);
+                view.moveView(move);
+            } else {
+                drag = true;
+                startDrag = positionInView(e);
+            }
+        }
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        drag = false;
     }
 }

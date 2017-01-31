@@ -30,6 +30,7 @@ public class View extends JPanel implements ActionListener {
     private int fps, fpscnt, targetFps = 20;
     private int frame;
     private int border = 40;
+    private Point<Double> viewCorner;
 
     public View(Model model, Controller controllerArg, Settings settings) {
         super(true);
@@ -46,6 +47,7 @@ public class View extends JPanel implements ActionListener {
         }).start();
         this.painter = new Painter(model);
         SwingUtilities.invokeLater(timer::start);
+        viewCorner = new Point<>(0d, 0d);
     }
 
     public Model getModel() {
@@ -101,7 +103,7 @@ public class View extends JPanel implements ActionListener {
         for (Point<Double> point : points) {
             for (int i = -1; i <= 1; i++) {
                 for (int j = -1; j <= 1; j++) {
-                    if(i*i+j*j == 2) {
+                    if (i * i + j * j == 2) {
                         check.add(new Point<>(point.x + i * border, point.y + j * border));
                     }
                 }
@@ -113,15 +115,50 @@ public class View extends JPanel implements ActionListener {
             mn.x = Math.min(mn.x, pt.x);
             mn.y = Math.min(mn.y, pt.y);
         }
-        setView(new Point<>(mn.x.intValue(), mn.y.intValue()), new Point<>(mx.x.intValue(), mx.y.intValue()));
+        setView(mn, mx);
     }
 
-    public void setView(Point<Integer> mn, Point<Integer> mx) {
+    public void setView(Point<Double> mn, Point<Double> mx) {
         final AffineTransform transform = new AffineTransform();
-        Point<Integer> size = new Point<>(mx.x - mn.x, mx.y - mn.y);
+        Point<Integer> size = new Point<>((int) (mx.x - mn.x), (int) (mx.y - mn.y));
         final double scale = 1 / Math.max((double) size.x / getWidth(), (double) size.y / getHeight());
         transform.scale(scale, scale);
         transform.translate(-mn.x, -mn.y);
         settings.setViewTransform(transform);
+        viewCorner.x = mn.x;
+        viewCorner.y = mn.y;
+    }
+
+    public void moveView(Point<Double> move) {
+        final AffineTransform transform = settings.getViewTransform();
+        transform.translate(move.x, move.y);
+        viewCorner.x -= move.x;
+        viewCorner.y -= move.y;
+    }
+
+    public void zoomView(double value) {
+        zoomView(value, new Point<>(getWidth() / 2d, getHeight() / 2d));
+    }
+
+    public void zoomView(double value, Point<Double> point) {
+        final Point<Double> mn = new Point<>(viewCorner);
+        final Point<Double> mx = positionInView(new Point<>((double) getWidth(), (double) getHeight()));
+        final AffineTransform transform = settings.getViewTransform();
+        final double scaleX = transform.getScaleX();
+        final double scaleY = transform.getScaleY();
+        final double sign = Math.signum(1 - value);
+        mn.x -= 50 / scaleX * sign;
+        mn.y -= 50 / scaleY * sign;
+        mx.x += 50 / scaleX * sign;
+        mx.y += 50 / scaleY * sign;
+        setView(mn, mx);
+    }
+
+    public Point<Double> positionInView(Point<Double> point) {
+        final AffineTransform viewTransform = settings.getViewTransform();
+        final Point<Double> res = new Point<>(0., 0.);
+        res.x = (point.x - viewTransform.getTranslateX()) / viewTransform.getScaleX();
+        res.y = (point.y - viewTransform.getTranslateY()) / viewTransform.getScaleY();
+        return res;
     }
 }
