@@ -144,13 +144,15 @@ public class View extends JPanel implements ActionListener {
         final Point<Double> mn = new Point<>(viewCorner);
         final Point<Double> mx = positionInView(new Point<>((double) getWidth(), (double) getHeight()));
         final AffineTransform transform = settings.getViewTransform();
+        final Point<Double> ratio = new Point<>(point.x / getWidth(), point.y / getHeight());
+        final Point<Double> invert = new Point<>(1 - ratio.x, 1 - ratio.y);
         final double scaleX = transform.getScaleX();
         final double scaleY = transform.getScaleY();
         final double sign = Math.signum(1 - value);
-        mn.x -= 50 / scaleX * sign;
-        mn.y -= 50 / scaleY * sign;
-        mx.x += 50 / scaleX * sign;
-        mx.y += 50 / scaleY * sign;
+        mn.x -= 50 * ratio.x / scaleX * sign;
+        mn.y -= 50 * ratio.y / scaleY * sign;
+        mx.x += 50 * invert.x / scaleX * sign;
+        mx.y += 50 * invert.y / scaleY * sign;
         setView(mn, mx);
     }
 

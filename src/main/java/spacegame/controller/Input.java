@@ -111,10 +111,11 @@ public class Input implements KeyListener, MouseListener, MouseWheelListener, Mo
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
+        final Point<Double> point = new Point<>((double) e.getX(), (double) e.getY());
         if (e.getWheelRotation() == 1) {
-            view.zoomView(1 / scaleSpeed);
+            view.zoomView(1 / scaleSpeed, point);
         } else {
-            view.zoomView(scaleSpeed);
+            view.zoomView(scaleSpeed, point);
         }
     }
 
