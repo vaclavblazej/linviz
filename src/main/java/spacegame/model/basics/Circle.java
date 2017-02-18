@@ -1,9 +1,11 @@
 package spacegame.model.basics;
 
+import spacegame.model.things.BaseShape;
+
 /**
  * @author Václav Blažej
  */
-public final class Circle {
+public final class Circle extends BaseShape{
 
     private final Point<Double> point;
 

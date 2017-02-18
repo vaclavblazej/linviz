@@ -30,6 +30,7 @@ public class View extends JPanel implements ActionListener {
     private int fps, fpscnt, targetFps = 20;
     private int frame;
     private int border = 40;
+    private double zoomSpeed = 50;
     private Point<Double> viewCorner;
 
     public View(Model model, Controller controllerArg, Settings settings) {
@@ -119,8 +120,9 @@ public class View extends JPanel implements ActionListener {
     }
 
     public void setView(Point<Double> mn, Point<Double> mx) {
-        final AffineTransform transform = new AffineTransform();
-        Point<Integer> size = new Point<>((int) (mx.x - mn.x), (int) (mx.y - mn.y));
+        final AffineTransform transform = settings.getBaseTransform();
+        Point<Integer> size = new Point<>((int) (mx.x - mn.x),
+                (int) (mx.y - mn.y));
         final double scale = 1 / Math.max((double) size.x / getWidth(), (double) size.y / getHeight());
         transform.scale(scale, scale);
         transform.translate(-mn.x, -mn.y);
@@ -149,10 +151,10 @@ public class View extends JPanel implements ActionListener {
         final double scaleX = transform.getScaleX();
         final double scaleY = transform.getScaleY();
         final double sign = Math.signum(1 - value);
-        mn.x -= 50 * ratio.x / scaleX * sign;
-        mn.y -= 50 * ratio.y / scaleY * sign;
-        mx.x += 50 * invert.x / scaleX * sign;
-        mx.y += 50 * invert.y / scaleY * sign;
+        mn.x -= zoomSpeed * ratio.x / scaleX * sign;
+        mn.y -= zoomSpeed * ratio.y / scaleY * sign;
+        mx.x += zoomSpeed * invert.x / scaleX * sign;
+        mx.y += zoomSpeed * invert.y / scaleY * sign;
         setView(mn, mx);
     }
 

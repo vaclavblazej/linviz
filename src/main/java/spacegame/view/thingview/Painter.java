@@ -12,13 +12,13 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.util.List;
 
-import static spacegame.Common.toInt;
-
 /**
  * @author Václav Blažej
  */
 public class Painter {
 
+    // for precision while painting (java cannot output non-integer values into graphics)
+    public static final int SCALING = 100;
     private Model model;
 
     public Painter(Model model) {
@@ -27,8 +27,19 @@ public class Painter {
 
     public void paint(Graphics gg, View view, AffineTransform transform) {
         Graphics2D g = (Graphics2D) gg;
-        final java.util.List<BaseShape> shapes = model.getShapes(view.getFrame());
-        g.setColor(new Color(1f, 1f, 1f, 0.8f));
+        if (view.getFrame() > 0) {
+            final java.util.List<BaseShape> shapes = model.getShapes(view.getFrame() - 1);
+            g.setColor(new Color(0.2f, 1f, 0.4f, 0.4f));
+            draw(g, view, transform, shapes);
+        }
+        {
+            final java.util.List<BaseShape> shapes = model.getShapes(view.getFrame());
+            g.setColor(new Color(1f, 1f, 1f, 0.8f));
+            draw(g, view, transform, shapes);
+        }
+    }
+
+    private void draw(Graphics2D g, View view, AffineTransform transform, final java.util.List<BaseShape> shapes) {
         for (BaseShape shape : shapes) {
             g.setTransform(transform);
             addTrans(g, shape);
@@ -45,17 +56,15 @@ public class Painter {
     }
 
     private void drawEllipse(Graphics2D g, Ellipse ellipse) {
-        final Point<Double> position = ellipse.position;
-        g.drawOval(position.x.intValue(), position.y.intValue(), ellipse.width.intValue(), ellipse.height.intValue());
+        fillOval(g, -ellipse.width / 2, -ellipse.height / 2,
+                ellipse.width, ellipse.height);
+        final double dotSize = 10;
+        g.setColor(Color.RED);
+        g.fillOval((int) -dotSize / 2, (int) -dotSize / 2, (int) dotSize, (int) dotSize);
     }
 
     private void drawPolygon(Graphics2D g, Polygon polygon) {
-        final List<Point<Double>> points = polygon.getPoints();
-        final java.awt.Polygon p = new java.awt.Polygon();
-        for (Point<Double> point : points) {
-            p.addPoint(point.x.intValue(), point.y.intValue());
-        }
-        g.fillPolygon(p);
+        fillPolygon(g, polygon.getPoints());
     }
 
     private void drawVectorShape(Graphics2D g, VectorShape vectorShape) {
@@ -68,12 +77,24 @@ public class Painter {
     private void addTrans(Graphics2D g, BaseShape b) {
         final AffineTransform tx = new AffineTransform();
         final Point<Double> position = b.getPosition();
-        tx.translate(position.getX(toInt), position.getY(toInt));
+        tx.translate(SCALING * position.x, SCALING * position.y);
         tx.rotate(b.rotation);
         g.transform(tx);
     }
 
-    private void drawLine(Graphics2D g, Point<Double> a, Point<Double> b) {
-        g.drawLine(a.getX(toInt), a.getY(toInt), b.getX(toInt), b.getY(toInt));
+    private void fillPolygon(Graphics2D g, List<Point<Double>> points) {
+        final java.awt.Polygon p = new java.awt.Polygon();
+        for (Point<Double> point : points) {
+            p.addPoint((int) (SCALING * point.x), (int) (SCALING * point.y));
+        }
+        g.fillPolygon(p);
+    }
+
+    private void fillOval(Graphics2D g, double x, double y, double width, double height) {
+        g.fillOval((int) (SCALING * x), (int) (SCALING * y), (int) (SCALING * width), (int) (SCALING * height));
+    }
+
+    private void drawOval(Graphics2D g, double x, double y, double width, double height) {
+        g.drawOval((int) (SCALING * x), (int) (SCALING * y), (int) (SCALING * width), (int) (SCALING * height));
     }
 }

@@ -1,6 +1,7 @@
 package spacegame.model;
 
 import spacegame.Settings;
+import spacegame.model.basics.Circle;
 import spacegame.model.basics.Point;
 import spacegame.model.things.BaseShape;
 import spacegame.model.things.Rectangle;
@@ -20,7 +21,6 @@ public final class Model {
         this.settings = settings;
         this.shapes = new ArrayList<>();
         this.shapes.add(new ArrayList<>());
-        addShape(new Rectangle(new Point<Double>(0d, 0d), 0d, 20d));
     }
 
     public int size() {

@@ -2,6 +2,7 @@ package spacegame;
 
 import java.awt.geom.AffineTransform;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,14 +11,20 @@ import java.util.List;
  */
 public final class Settings implements Serializable {
 
+    public static DecimalFormat twoDecimalOutputFormat = new DecimalFormat("#.00");
     private volatile List<SettingsListener> listeners = new ArrayList<>();
     private boolean showInfo;
     private AffineTransform viewTransform;
+    private static final AffineTransform BASE_TRANSFORM = AffineTransform.getScaleInstance(1, -1);
+
+    public AffineTransform getBaseTransform(){
+        return new AffineTransform(BASE_TRANSFORM);
+    }
 
     public Settings() {
         this.listeners = new ArrayList<>();
         this.showInfo = true;
-        viewTransform = new AffineTransform();
+        viewTransform = getBaseTransform();
     }
 
     public void fireSettingsChange() {

@@ -8,6 +8,8 @@ import spacegame.view.View;
 
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Václav Blažej
@@ -19,13 +21,35 @@ public class Input implements KeyListener, MouseListener, MouseWheelListener, Mo
     private View view;
     private double scaleSpeed = 1.3;
     private Point<Double> startDrag = new Point<>(0d, 0d);
-    private Point<Double> movedDrag = new Point<>(0d, 0d);
     private Boolean drag = false;
+    private Map<Integer, Runnable> keyMap = new HashMap<>();
+    private double speed = 3;
 
     public Input(View view, Model model, Settings settings) {
         this.view = view;
         this.model = model;
         this.settings = settings;
+        keyMap.put(107, () -> view.zoomView(scaleSpeed)); // +
+        keyMap.put(109, () -> view.zoomView(1 / scaleSpeed)); // -
+        keyMap.put(68, () -> {
+            final AffineTransform transform = settings.getViewTransform();
+            transform.translate(-speed / transform.getScaleX(), 0.0);
+        }); // a
+        keyMap.put(65, () -> {
+            final AffineTransform transform = settings.getViewTransform();
+            transform.translate(+speed / transform.getScaleX(), 0.0);
+        }); // d
+        keyMap.put(87, () -> {
+            final AffineTransform transform = settings.getViewTransform();
+            transform.translate(0.0, +speed / transform.getScaleX());
+        }); // w
+        keyMap.put(83, () -> {
+            final AffineTransform transform = settings.getViewTransform();
+            transform.translate(0.0, -speed / transform.getScaleX());
+        }); // s
+        keyMap.put(37, view::prevState); // <-
+        keyMap.put(39, view::nextState); // ->
+        keyMap.put(67, view::center); // c
     }
 
     @Override
@@ -34,47 +58,9 @@ public class Input implements KeyListener, MouseListener, MouseWheelListener, Mo
 
     @Override
     public void keyPressed(KeyEvent e) {
-        final AffineTransform transform = settings.getViewTransform();
-        double speed = 3;
-        switch (e.getKeyCode()) {
-            case 107: { // +
-                view.zoomView(scaleSpeed);
-                break;
-            }
-            case 109: { // -
-                view.zoomView(1 / scaleSpeed);
-                break;
-            }
-            case 68: { // a
-                transform.translate(-speed / transform.getScaleX(), 0.0);
-                break;
-            }
-            case 65: { // d
-                transform.translate(+speed / transform.getScaleX(), 0.0);
-                break;
-            }
-            case 87: { // w
-                transform.translate(0.0, +speed / transform.getScaleX());
-                break;
-            }
-            case 83: { // s
-                transform.translate(0.0, -speed / transform.getScaleX());
-                break;
-            }
-            case 37: { // <-
-                view.prevState();
-                break;
-            }
-            case 39: { // ->
-                view.nextState();
-                break;
-            }
-            case 67: { // c (center view on everything)
-                view.center();
-                break;
-            }
-            default:
-                System.out.println("input not known key: " + e.getKeyChar() + ", " + e.getKeyCode());
+        final int key = e.getKeyCode();
+        if (keyMap.containsKey(key)) {
+            keyMap.get(key).run();
         }
     }
 
