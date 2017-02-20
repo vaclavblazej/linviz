@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,10 @@ public class View extends JPanel implements ActionListener {
     private int border = 40;
     private double zoomSpeed = 50;
     private Point<Double> viewCorner;
+    private boolean showCmdline = false;
+    private long tick = 0;
+    private LinkedList<CommandLog> commandLog = new LinkedList<>();
+    private StringBuilder cmdInput = new StringBuilder();
 
     public View(Model model, Controller controllerArg, Settings settings) {
         super(true);
@@ -49,6 +54,7 @@ public class View extends JPanel implements ActionListener {
         this.painter = new Painter(model);
         SwingUtilities.invokeLater(timer::start);
         viewCorner = new Point<>(0d, 0d);
+        commandLog.add(new CommandLog(Color.red, "Hello world!"));
     }
 
     public Model getModel() {
@@ -75,7 +81,34 @@ public class View extends JPanel implements ActionListener {
             y += 20;
             g.drawString("FRAME ( " + (frame + 1) + " / " + model.size() + " )", 10, y);
         }
+        if (showCmdline) {
+            int padding = 10;
+            int textPadding = 10;
+            int size = 500;
+            int tickSpeed = 30;
+            g.setColor(Color.black);
+            g.fillRect(padding, padding, size, size);
+            g.setColor(Color.green);
+            g.drawRect(padding, padding, size, size);
+            int row = 1;
+            for (CommandLog log : commandLog) {
+                g.setColor(log.color);
+                g.drawString(log.text, padding + textPadding, size - 20 * row);
+                row++;
+            }
+            g.drawString(cmdInput.toString(), padding + textPadding, size);
+            String message = cmdInput.toString();
+            Font defaultFont = new Font("Helvetica", Font.PLAIN, 12);
+            FontMetrics fontMetrics = g.getFontMetrics(defaultFont);
+            int textWidth = fontMetrics.stringWidth(message);
+            int textHeight = fontMetrics.getHeight();
+            if (tick % tickSpeed < tickSpeed / 2) {
+                final int x = padding + textPadding + textWidth;
+                g.drawLine(x, size + 2, x, size - textHeight + 2);
+            }
+        }
         fpscnt++;
+        tick++;
     }
 
     @Override
@@ -89,6 +122,28 @@ public class View extends JPanel implements ActionListener {
 
     public void prevState() {
         this.frame = Math.max(0, frame - 1);
+    }
+
+    public void toggleCommandline() {
+        showCmdline = !showCmdline;
+    }
+
+    public void sendCmdInput(char c) {
+        if (c == '\n') {
+            acceptCmdInput();
+        } else if (c == '\b') {
+            if (cmdInput.length() > 0) {
+                cmdInput.deleteCharAt(cmdInput.length() - 1);
+            }
+        } else {
+            cmdInput.append(c);
+        }
+    }
+
+    public void acceptCmdInput() {
+        String input = cmdInput.toString();
+        cmdInput = new StringBuilder();
+        commandLog.addFirst(new CommandLog(Color.red, input));
     }
 
     public int getFrame() {
@@ -164,5 +219,19 @@ public class View extends JPanel implements ActionListener {
         res.x = (point.x - viewTransform.getTranslateX()) / viewTransform.getScaleX();
         res.y = (point.y - viewTransform.getTranslateY()) / viewTransform.getScaleY();
         return res;
+    }
+
+    public boolean isShowCmdline() {
+        return showCmdline;
+    }
+
+    private class CommandLog {
+        Color color;
+        String text;
+
+        public CommandLog(Color color, String text) {
+            this.color = color;
+            this.text = text;
+        }
     }
 }

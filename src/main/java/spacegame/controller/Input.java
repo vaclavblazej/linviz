@@ -9,7 +9,9 @@ import spacegame.view.View;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Václav Blažej
@@ -24,6 +26,7 @@ public class Input implements KeyListener, MouseListener, MouseWheelListener, Mo
     private Boolean drag = false;
     private Map<Integer, Runnable> keyMap = new HashMap<>();
     private double speed = 3;
+    private Set<Integer> exceptions = new HashSet<>();
 
     public Input(View view, Model model, Settings settings) {
         this.view = view;
@@ -50,6 +53,11 @@ public class Input implements KeyListener, MouseListener, MouseWheelListener, Mo
         keyMap.put(37, view::prevState); // <-
         keyMap.put(39, view::nextState); // ->
         keyMap.put(67, view::center); // c
+        keyMap.put(192, view::toggleCommandline); // ` ~
+        exceptions.add(16);
+        exceptions.add(17);
+        exceptions.add(18);
+        exceptions.add(192);
     }
 
     @Override
@@ -59,8 +67,14 @@ public class Input implements KeyListener, MouseListener, MouseWheelListener, Mo
     @Override
     public void keyPressed(KeyEvent e) {
         final int key = e.getKeyCode();
-        if (keyMap.containsKey(key)) {
-            keyMap.get(key).run();
+        if (!view.isShowCmdline() || exceptions.contains(key)) {
+            if (keyMap.containsKey(key)) {
+                keyMap.get(key).run();
+            } else {
+                System.out.println("Don't know mapping for key " + key);
+            }
+        } else {
+            view.sendCmdInput(e.getKeyChar());
         }
     }
 
