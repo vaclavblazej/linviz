@@ -1,5 +1,6 @@
 package spacegame.view;
 
+import spacegame.Meta;
 import spacegame.Settings;
 import spacegame.controller.Controller;
 import spacegame.model.Model;
@@ -8,13 +9,16 @@ import spacegame.model.things.BaseShape;
 import spacegame.view.thingview.Painter;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -28,6 +32,7 @@ public class View extends JPanel implements ActionListener {
     private final Settings settings;
     private final spacegame.view.thingview.Painter painter;
     private final AffineTransform defaultTransform = new AffineTransform();
+    private final HashMap<Class, Function<String, Object>> conversionMap = new HashMap<>();
     private int fps, fpscnt, targetFps = 20;
     private int frame;
     private int border = 40;
@@ -37,6 +42,7 @@ public class View extends JPanel implements ActionListener {
     private long tick = 0;
     private LinkedList<CommandLog> commandLog = new LinkedList<>();
     private StringBuilder cmdInput = new StringBuilder();
+    private TerminalCommands terminalCommands = new TerminalCommands();
 
     public View(Model model, Controller controllerArg, Settings settings) {
         super(true);
@@ -55,6 +61,9 @@ public class View extends JPanel implements ActionListener {
         SwingUtilities.invokeLater(timer::start);
         viewCorner = new Point<>(0d, 0d);
         commandLog.add(new CommandLog(Color.red, "Hello world!"));
+        conversionMap.put(Integer.class, Integer::valueOf);
+        conversionMap.put(Double.class, Double::valueOf);
+        conversionMap.put(String.class, o -> o);
     }
 
     public Model getModel() {
@@ -91,7 +100,9 @@ public class View extends JPanel implements ActionListener {
             g.setColor(Color.green);
             g.drawRect(padding, padding, size, size);
             int row = 1;
-            for (CommandLog log : commandLog) {
+            final Iterator<CommandLog> iterator = commandLog.iterator();
+            for (int i = 0; i < 16 && iterator.hasNext(); i++) {
+                CommandLog log = iterator.next();
                 g.setColor(log.color);
                 g.drawString(log.text, padding + textPadding, size - 20 * row);
                 row++;
@@ -143,7 +154,48 @@ public class View extends JPanel implements ActionListener {
     public void acceptCmdInput() {
         String input = cmdInput.toString();
         cmdInput = new StringBuilder();
-        commandLog.addFirst(new CommandLog(Color.red, input));
+        final String[] split = input.split(" ");
+        String command = split[0];
+        final List<String> arguments = new ArrayList<>();
+        for (int i = 1; i < split.length; i++) {
+            arguments.add(split[i]);
+        }
+        final String result = runTerminalCommand(command, arguments);
+        commandLog.addFirst(new CommandLog(Color.lightGray, input));
+        if (!result.isEmpty()) {
+            commandLog.addFirst(new CommandLog(Color.green, result));
+        }
+    }
+
+    public String runTerminalCommand(String command, List<String> arguments) {
+        final List<Method> annotatedMethods = Meta.getAnnotatedMethods(TerminalCommands.class, Command.class);
+        main:
+        for (Method method : annotatedMethods) {
+            if (Objects.equals(method.getName(), command) && arguments.size() == method.getParameterCount()) {
+                final Class<?>[] parameterTypes = method.getParameterTypes();
+                final ArrayList<Object> convertedArguments = new ArrayList<>();
+                for (int i = 0; i < parameterTypes.length; i++) {
+                    final Class<?> type = parameterTypes[i];
+                    final String argument = arguments.get(i);
+                    if (conversionMap.containsKey(type)) {
+                        final Function<String, Object> conversionFunction = conversionMap.get(type);
+                        try {
+                            Object convertedArgument = conversionFunction.apply(argument);
+                            convertedArguments.add(convertedArgument);
+                        } catch (Exception ex) {
+                            System.out.println("tried to convert " + argument + " to " + type.getName());
+                            continue main;
+                        }
+                    }
+                }
+                try {
+                    return (String) method.invoke(terminalCommands, convertedArguments.toArray());
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return "";
     }
 
     public int getFrame() {
