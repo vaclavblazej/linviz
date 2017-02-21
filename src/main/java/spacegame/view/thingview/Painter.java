@@ -1,16 +1,24 @@
 package spacegame.view.thingview;
 
+import spacegame.Meta;
 import spacegame.model.Model;
 import spacegame.model.basics.Ellipse;
 import spacegame.model.basics.Point;
 import spacegame.model.basics.Polygon;
-import spacegame.model.things.BaseShape;
-import spacegame.model.things.VectorShape;
+import spacegame.model.things.*;
 import spacegame.view.View;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Václav Blažej
@@ -20,9 +28,18 @@ public class Painter {
     // for precision while painting (java cannot output non-integer values into graphics)
     public static final int SCALING = 100;
     private Model model;
+    private Map<String, Method> drawMethods = new HashMap<>();
 
     public Painter(Model model) {
         this.model = model;
+        final List<Method> annotatedMethods = Meta.getAnnotatedMethods(Painter.class, Drawer.class);
+        for (Method method : annotatedMethods) {
+            final String name = method.getName();
+            final String draw = "draw";
+            if (name.startsWith(draw)) {
+                drawMethods.put(name.substring(draw.length()), method);
+            }
+        }
     }
 
     public void paint(Graphics gg, View view, AffineTransform transform) {
@@ -43,19 +60,28 @@ public class Painter {
         for (BaseShape shape : shapes) {
             g.setTransform(transform);
             addTrans(g, shape);
-            if (shape instanceof VectorShape) {
-                drawVectorShape(g, (VectorShape) shape);
-            } else if (shape instanceof Polygon) {
-                drawPolygon(g, (Polygon) shape);
-            } else if (shape instanceof Ellipse) {
-                drawEllipse(g, (Ellipse) shape);
+            Class<? extends BaseShape> aClass = shape.getClass();
+            String className = aClass.getSimpleName();
+            if (drawMethods.containsKey(className)) {
+                try {
+                    drawMethods.get(className).invoke(this, g, shape);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    System.out.println("Failed to invoke draw method for class " + className);
+                    e.printStackTrace();
+                }
             } else {
-                System.out.println("Draw method for this class is not implemented: " + shape.getClass());
+                System.out.println("Draw method for this class is not implemented: " + aClass);
             }
         }
     }
 
-    private void drawEllipse(Graphics2D g, Ellipse ellipse) {
+    @Drawer
+    public void drawRectangle(Graphics2D g, spacegame.model.things.Rectangle rectangle) {
+        drawVectorShape(g, rectangle);
+    }
+
+    @Drawer
+    public void drawEllipse(Graphics2D g, Ellipse ellipse) {
         fillOval(g, -ellipse.width / 2, -ellipse.height / 2,
                 ellipse.width, ellipse.height);
         final double dotSize = 10;
@@ -63,11 +89,13 @@ public class Painter {
         g.fillOval((int) -dotSize / 2, (int) -dotSize / 2, (int) dotSize, (int) dotSize);
     }
 
-    private void drawPolygon(Graphics2D g, Polygon polygon) {
+    @Drawer
+    public void drawPolygon(Graphics2D g, Polygon polygon) {
         fillPolygon(g, polygon.getPoints());
     }
 
-    private void drawVectorShape(Graphics2D g, VectorShape vectorShape) {
+    @Drawer
+    public void drawVectorShape(Graphics2D g, VectorShape vectorShape) {
         final java.util.List<spacegame.model.basics.Polygon> polygons = vectorShape.getPolygons();
         for (Polygon polygon : polygons) {
             drawPolygon(g, polygon);
@@ -96,5 +124,11 @@ public class Painter {
 
     private void drawOval(Graphics2D g, double x, double y, double width, double height) {
         g.drawOval((int) (SCALING * x), (int) (SCALING * y), (int) (SCALING * width), (int) (SCALING * height));
+    }
+
+    // annotate any method which name-matches drawn shape
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    private @interface Drawer {
     }
 }

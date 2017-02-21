@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -70,6 +71,7 @@ public class Meta {
 
     public static List<Method> getAnnotatedMethods(Class clazz, Class annotationClass) {
         final ArrayList<Method> methods = new ArrayList<>();
+        System.out.println("METHODS for " + clazz.getSimpleName()+ ": " + Arrays.asList(clazz.getMethods()));
         for (Method method : clazz.getMethods()) {
             if (method.isAnnotationPresent(annotationClass)) {
                 methods.add(method);

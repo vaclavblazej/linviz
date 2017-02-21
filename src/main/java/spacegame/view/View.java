@@ -42,12 +42,12 @@ public class View extends JPanel implements ActionListener {
     private long tick = 0;
     private LinkedList<CommandLog> commandLog = new LinkedList<>();
     private StringBuilder cmdInput = new StringBuilder();
-    private TerminalCommands terminalCommands = new TerminalCommands();
+    private TerminalCommands terminalCommands;
 
-    public View(Model model, Controller controllerArg, Settings settings) {
+    public View(Model model, Controller controller, Settings settings) {
         super(true);
         this.model = model;
-        this.controller = controllerArg;
+        this.controller = controller;
         this.settings = settings;
         this.setFocusable(true);
         this.timer = new Timer(1000 / targetFps, this);
@@ -60,10 +60,10 @@ public class View extends JPanel implements ActionListener {
         this.painter = new Painter(model);
         SwingUtilities.invokeLater(timer::start);
         viewCorner = new Point<>(0d, 0d);
-        commandLog.add(new CommandLog(Color.red, "Hello world!"));
         conversionMap.put(Integer.class, Integer::valueOf);
         conversionMap.put(Double.class, Double::valueOf);
         conversionMap.put(String.class, o -> o);
+        terminalCommands = new TerminalCommands(model, controller, this, settings);
     }
 
     public Model getModel() {
@@ -230,6 +230,7 @@ public class View extends JPanel implements ActionListener {
         final AffineTransform transform = settings.getBaseTransform();
         Point<Integer> size = new Point<>((int) (mx.x - mn.x),
                 (int) (mx.y - mn.y));
+//        System.out.println("" + (double) size.x / getWidth() + " " + (double) size.y / getHeight());
         final double scale = 1 / Math.max((double) size.x / getWidth(), (double) size.y / getHeight());
         transform.scale(scale, scale);
         transform.translate(-mn.x, -mn.y);
@@ -258,10 +259,10 @@ public class View extends JPanel implements ActionListener {
         final double scaleX = transform.getScaleX();
         final double scaleY = transform.getScaleY();
         final double sign = Math.signum(1 - value);
-        mn.x -= zoomSpeed * ratio.x / scaleX * sign;
-        mn.y -= zoomSpeed * ratio.y / scaleY * sign;
-        mx.x += zoomSpeed * invert.x / scaleX * sign;
-        mx.y += zoomSpeed * invert.y / scaleY * sign;
+        mn.x -= zoomSpeed * ratio.x * sign / scaleX;
+        mn.y -= zoomSpeed * ratio.y * sign / scaleY;
+        mx.x += zoomSpeed * invert.x * sign / scaleX;
+        mx.y += zoomSpeed * invert.y * sign / scaleY;
         setView(mn, mx);
     }
 

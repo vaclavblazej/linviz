@@ -6,6 +6,7 @@ import spacegame.model.basics.Point;
 import spacegame.model.basics.Polygon;
 import spacegame.model.things.Rectangle;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,9 +16,9 @@ import java.util.Scanner;
  * @author Václav Blažej
  */
 public class StdInput {
-    public static void loadInput(Model model) {
+    public static void loadInput(Model model, InputStream in) {
         System.out.println("Getting the input from commandline");
-        final InputStreamReader reader = new InputStreamReader(System.in);
+        final InputStreamReader reader = new InputStreamReader(in);
         final Scanner scanner = new Scanner(reader);
 
         loop:
