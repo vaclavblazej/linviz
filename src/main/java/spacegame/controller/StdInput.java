@@ -2,6 +2,7 @@ package spacegame.controller;
 
 import spacegame.model.Model;
 import spacegame.model.basics.Ellipse;
+import spacegame.model.basics.Line;
 import spacegame.model.basics.Point;
 import spacegame.model.basics.Polygon;
 import spacegame.model.things.Rectangle;
@@ -44,6 +45,10 @@ public class StdInput {
                     addEllipse(scanner, model);
                     break;
                 }
+                case "ln": {
+                    addLine(scanner, model);
+                    break;
+                }
                 case "frame": {
                     model.addState();
                     break;
@@ -51,6 +56,18 @@ public class StdInput {
             }
         }
         System.out.println("finished loading input");
+    }
+
+    private static void addLine(Scanner scanner, Model model) {
+        final double a = scanner.nextDouble();
+        final double b = scanner.nextDouble();
+        final double c = scanner.nextDouble();
+        final double d = scanner.nextDouble();
+        final Point<Double> origin = new Point<>(a, b);
+        final Point<Double> vector = new Point<>(c, d);
+        final Point<Double> first = new Point<>(origin.x - 10 * vector.y, origin.y + 10 * vector.x);
+        final Point<Double> second = new Point<>(origin.x + 10 * vector.y, origin.y - 10 * vector.x);
+        model.addShape(new Line(first, second));
     }
 
     private static void addPolygonHalfPlane(Scanner scanner, Model model) {

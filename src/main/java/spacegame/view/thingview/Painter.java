@@ -3,9 +3,11 @@ package spacegame.view.thingview;
 import spacegame.Meta;
 import spacegame.model.Model;
 import spacegame.model.basics.Ellipse;
+import spacegame.model.basics.Line;
 import spacegame.model.basics.Point;
 import spacegame.model.basics.Polygon;
-import spacegame.model.things.*;
+import spacegame.model.things.BaseShape;
+import spacegame.model.things.VectorShape;
 import spacegame.view.View;
 
 import java.awt.*;
@@ -87,6 +89,12 @@ public class Painter {
         final double dotSize = 10;
         g.setColor(Color.RED);
         g.fillOval((int) -dotSize / 2, (int) -dotSize / 2, (int) dotSize, (int) dotSize);
+    }
+
+    @Drawer
+    public void drawLine(Graphics2D g, Line line) {
+        g.drawLine((int)(SCALING * line.a.x), (int)(SCALING * line.a.y),
+                (int)(SCALING * line.b.x), (int)(SCALING * line.b.y));
     }
 
     @Drawer

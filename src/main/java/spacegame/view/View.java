@@ -74,7 +74,7 @@ public class View extends JPanel implements ActionListener {
     public void paint(Graphics gg) {
         super.paint(gg);
         final Graphics2D g = (Graphics2D) gg;
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); //Set  anti-alias!
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); // Set anti-alias!
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON); // Set anti-alias for text
         gg.setColor(Color.BLACK);
         gg.fillRect(0, 0, getWidth(), getHeight());

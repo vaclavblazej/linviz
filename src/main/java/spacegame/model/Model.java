@@ -20,7 +20,6 @@ public final class Model {
         this.settings = settings;
         this.shapes = new ArrayList<>();
         this.shapes.add(new ArrayList<>());
-        addShape(new Rectangle(new Point<>(0., 0.), 0., 20.));
     }
 
     public int size() {
