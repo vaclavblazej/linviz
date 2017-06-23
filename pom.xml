@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.user.blazeva1</groupId>
-    <artifactId>space-game</artifactId>
+    <artifactId>linviz</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -13,7 +13,7 @@
     </properties>
 
     <build>
-        <finalName>space-game</finalName>
+        <finalName>linviz</finalName>
         <plugins>
 
             <plugin>

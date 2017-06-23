@@ -1,2 +1,2 @@
-Main-Class: spacegame.Main
+Main-Class: cz.cvut.linviz.Main
 

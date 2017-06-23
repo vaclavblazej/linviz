@@ -1,4 +1,4 @@
-Space-Game
+Lin vizualizer
 =====
 
-TBD
+Java based visualization tool for basic geometric shapes.
