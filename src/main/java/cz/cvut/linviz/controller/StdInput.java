@@ -49,6 +49,10 @@ public class StdInput {
                     addLine(scanner, model);
                     break;
                 }
+                case "dl": {
+                    addGeneralLine(scanner, model);
+                    break;
+                }
                 case "frame": {
                     model.addState();
                     break;
@@ -56,6 +60,23 @@ public class StdInput {
             }
         }
         System.out.println("finished loading input");
+    }
+
+    private static void addGeneralLine(Scanner scanner, Model model) {
+        final double a = scanner.nextDouble();
+        final double b = scanner.nextDouble();
+        final double c = -scanner.nextDouble();
+        Point<Double> first, second;
+        final Point<Double> dir = new Point<>(-b * 100, a * 100);
+        if (a != 0) {
+            final Point<Double> point = new Point<>(0., -c / b);
+            first = new Point<>(point.x + dir.x, point.y + dir.y);
+            second = new Point<>(point.x - dir.x, point.y - dir.y);
+        } else {
+            first = new Point<>(-1000., -c / b);
+            second = new Point<>(1000., -c / b);
+        }
+        model.addShape(new Line(first, second));
     }
 
     private static void addLine(Scanner scanner, Model model) {

@@ -1,13 +1,14 @@
 package cz.cvut.linviz.view.thingview;
 
+import cz.cvut.linviz.Meta;
+import cz.cvut.linviz.Settings;
 import cz.cvut.linviz.model.Model;
 import cz.cvut.linviz.model.basics.Ellipse;
 import cz.cvut.linviz.model.basics.Line;
-import cz.cvut.linviz.model.things.*;
-import cz.cvut.linviz.Meta;
 import cz.cvut.linviz.model.basics.Point;
 import cz.cvut.linviz.model.basics.Polygon;
 import cz.cvut.linviz.model.things.BaseShape;
+import cz.cvut.linviz.model.things.VectorShape;
 import cz.cvut.linviz.view.View;
 
 import java.awt.*;
@@ -28,12 +29,14 @@ import java.util.Map;
 public class Painter {
 
     // for precision while painting (java cannot output non-integer values into graphics)
-    public static final int SCALING = 100;
+    public static final int SCALING = 1000;
     private Model model;
+    private Settings settings;
     private Map<String, Method> drawMethods = new HashMap<>();
 
-    public Painter(Model model) {
+    public Painter(Model model, Settings settings) {
         this.model = model;
+        this.settings = settings;
         final List<Method> annotatedMethods = Meta.getAnnotatedMethods(Painter.class, Drawer.class);
         for (Method method : annotatedMethods) {
             final String name = method.getName();
@@ -46,11 +49,11 @@ public class Painter {
 
     public void paint(Graphics gg, View view, AffineTransform transform) {
         Graphics2D g = (Graphics2D) gg;
-        if (view.getFrame() > 0) {
-            final java.util.List<BaseShape> shapes = model.getShapes(view.getFrame() - 1);
-            g.setColor(new Color(0.2f, 1f, 0.4f, 0.4f));
-            draw(g, view, transform, shapes);
-        }
+//        if (view.getFrame() > 0) {
+//            final java.util.List<BaseShape> shapes = model.getShapes(view.getFrame() - 1);
+//            g.setColor(new Color(0.2f, 1f, 0.4f, 0.4f));
+//            draw(g, view, transform, shapes);
+//        }
         {
             final java.util.List<BaseShape> shapes = model.getShapes(view.getFrame());
             g.setColor(new Color(1f, 1f, 1f, 0.8f));
@@ -84,17 +87,23 @@ public class Painter {
 
     @Drawer
     public void drawEllipse(Graphics2D g, Ellipse ellipse) {
-        fillOval(g, -ellipse.width / 2, -ellipse.height / 2,
-                ellipse.width, ellipse.height);
+        fillOval(g, -ellipse.width / 2, -ellipse.height / 2, ellipse.width, ellipse.height);
         final double dotSize = 10;
-        g.setColor(Color.RED);
-        g.fillOval((int) -dotSize / 2, (int) -dotSize / 2, (int) dotSize, (int) dotSize);
+        g.setColor(Color.GREEN);
+        AffineTransform viewTransform = settings.getViewTransform();
+        double scale = viewTransform.getScaleX();
+        g.fillOval((int) (-dotSize / 2. / scale), (int) (-dotSize / 2. / scale), (int) (dotSize / scale), (int) (dotSize / scale));
     }
 
     @Drawer
     public void drawLine(Graphics2D g, Line line) {
-        g.drawLine((int)(SCALING * line.a.x), (int)(SCALING * line.a.y),
-                (int)(SCALING * line.b.x), (int)(SCALING * line.b.y));
+        AffineTransform viewTransform = settings.getViewTransform();
+        double scaleX = viewTransform.getScaleX();
+        Stroke dashed = new BasicStroke((int) (2. / scaleX), BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{(float) (9. / scaleX)}, 0);
+        g.setStroke(dashed);
+        g.setColor(Color.RED);
+        g.drawLine((int) (SCALING * line.a.x), (int) (SCALING * line.a.y),
+                (int) (SCALING * line.b.x), (int) (SCALING * line.b.y));
     }
 
     @Drawer

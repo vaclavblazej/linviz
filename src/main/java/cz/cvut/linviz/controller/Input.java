@@ -21,7 +21,7 @@ public class Input implements KeyListener, MouseListener, MouseWheelListener, Mo
     private final Model model;
     private final Settings settings;
     private View view;
-    private double scaleSpeed = 1.3;
+    private double scaleSpeed = 1.5;
     private Point<Double> startDrag = new Point<>(0d, 0d);
     private Boolean drag = false;
     private Map<Integer, Runnable> keyMap = new HashMap<>();

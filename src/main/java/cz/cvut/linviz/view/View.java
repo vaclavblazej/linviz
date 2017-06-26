@@ -4,6 +4,7 @@ import cz.cvut.linviz.Meta;
 import cz.cvut.linviz.Settings;
 import cz.cvut.linviz.controller.Controller;
 import cz.cvut.linviz.model.Model;
+import cz.cvut.linviz.model.basics.Point;
 import cz.cvut.linviz.model.things.BaseShape;
 
 import javax.swing.*;
@@ -34,8 +35,8 @@ public class View extends JPanel implements ActionListener {
     private int fps, fpscnt, targetFps = 20;
     private int frame;
     private int border = 40;
-    private double zoomSpeed = 50;
-    private cz.cvut.linviz.model.basics.Point<Double> viewCorner;
+    private double zoomSpeed = 150;
+    private Point<Double> viewCorner;
     private boolean showCmdline = false;
     private long tick = 0;
     private LinkedList<CommandLog> commandLog = new LinkedList<>();
@@ -55,9 +56,9 @@ public class View extends JPanel implements ActionListener {
             fps = 2 * fpscnt;
             fpscnt = 0;
         }).start();
-        this.painter = new cz.cvut.linviz.view.thingview.Painter(model);
+        this.painter = new cz.cvut.linviz.view.thingview.Painter(model, settings);
         SwingUtilities.invokeLater(timer::start);
-        viewCorner = new cz.cvut.linviz.model.basics.Point<>(0d, 0d);
+        viewCorner = new Point<>(0d, 0d);
         conversionMap.put(Integer.class, Integer::valueOf);
         conversionMap.put(Double.class, Double::valueOf);
         conversionMap.put(String.class, o -> o);
@@ -201,21 +202,21 @@ public class View extends JPanel implements ActionListener {
     }
 
     public void center() {
-        final cz.cvut.linviz.model.basics.Point<Double> mx = new cz.cvut.linviz.model.basics.Point<>(Double.MIN_VALUE, Double.MIN_VALUE);
-        final cz.cvut.linviz.model.basics.Point<Double> mn = new cz.cvut.linviz.model.basics.Point<>(Double.MAX_VALUE, Double.MAX_VALUE);
+        final Point<Double> mx = new Point<>(Double.MIN_VALUE, Double.MIN_VALUE);
+        final Point<Double> mn = new Point<>(Double.MAX_VALUE, Double.MAX_VALUE);
         final java.util.List<BaseShape> shapes = model.getShapes(frame);
-        final List<cz.cvut.linviz.model.basics.Point<Double>> points = shapes.stream().map(BaseShape::getPosition).collect(Collectors.toList());
-        final List<cz.cvut.linviz.model.basics.Point<Double>> check = new ArrayList<>();
-        for (cz.cvut.linviz.model.basics.Point<Double> point : points) {
+        final List<Point<Double>> points = shapes.stream().map(BaseShape::getPosition).collect(Collectors.toList());
+        final List<Point<Double>> check = new ArrayList<>();
+        for (Point<Double> point : points) {
             for (int i = -1; i <= 1; i++) {
                 for (int j = -1; j <= 1; j++) {
                     if (i * i + j * j == 2) {
-                        check.add(new cz.cvut.linviz.model.basics.Point<>(point.x + i * border, point.y + j * border));
+                        check.add(new Point<>(point.x + i * border, point.y + j * border));
                     }
                 }
             }
         }
-        for (cz.cvut.linviz.model.basics.Point<Double> pt : check) {
+        for (Point<Double> pt : check) {
             mx.x = Math.max(mx.x, pt.x);
             mx.y = Math.max(mx.y, pt.y);
             mn.x = Math.min(mn.x, pt.x);
@@ -224,20 +225,17 @@ public class View extends JPanel implements ActionListener {
         setView(mn, mx);
     }
 
-    public void setView(cz.cvut.linviz.model.basics.Point<Double> mn, cz.cvut.linviz.model.basics.Point<Double> mx) {
+    public void setView(Point<Double> mn, Point<Double> mx) {
         final AffineTransform transform = settings.getBaseTransform();
-        cz.cvut.linviz.model.basics.Point<Integer> size = new cz.cvut.linviz.model.basics.Point<>((int) (mx.x - mn.x),
-                (int) (mx.y - mn.y));
-//        System.out.println("" + (double) size.x / getWidth() + " " + (double) size.y / getHeight());
-        final double scale = 1 / Math.max((double) size.x / getWidth(), (double) size.y / getHeight());
-        transform.scale(scale, scale);
+        Point<Integer> size = new Point<>((int) (mx.x - mn.x), -(int) (mx.y - mn.y));
+        transform.scale(getWidth() / (double) size.x, getHeight() / ((double) size.y));
         transform.translate(-mn.x, -mn.y);
         settings.setViewTransform(transform);
         viewCorner.x = mn.x;
         viewCorner.y = mn.y;
     }
 
-    public void moveView(cz.cvut.linviz.model.basics.Point<Double> move) {
+    public void moveView(Point<Double> move) {
         final AffineTransform transform = settings.getViewTransform();
         transform.translate(move.x, move.y);
         viewCorner.x -= move.x;
@@ -245,28 +243,31 @@ public class View extends JPanel implements ActionListener {
     }
 
     public void zoomView(double value) {
-        zoomView(value, new cz.cvut.linviz.model.basics.Point<>(getWidth() / 2d, getHeight() / 2d));
+        zoomView(value, new Point<>(getWidth() / 2d, getHeight() / 2d));
     }
 
-    public void zoomView(double value, cz.cvut.linviz.model.basics.Point<Double> point) {
-        final cz.cvut.linviz.model.basics.Point<Double> mn = new cz.cvut.linviz.model.basics.Point<>(viewCorner);
-        final cz.cvut.linviz.model.basics.Point<Double> mx = positionInView(new cz.cvut.linviz.model.basics.Point<>((double) getWidth(), (double) getHeight()));
+    public void zoomView(double value, Point<Double> point) {
+        final Point<Double> mn = new Point<>(viewCorner);
+        final Point<Double> mx = positionInView(new Point<>((double) getWidth(), (double) getHeight()));
         final AffineTransform transform = settings.getViewTransform();
-        final cz.cvut.linviz.model.basics.Point<Double> ratio = new cz.cvut.linviz.model.basics.Point<>(point.x / getWidth(), point.y / getHeight());
-        final cz.cvut.linviz.model.basics.Point<Double> invert = new cz.cvut.linviz.model.basics.Point<>(1 - ratio.x, 1 - ratio.y);
+        final Point<Double> ratio = new Point<>(point.x / getWidth(), point.y / getHeight());
+        final Point<Double> invert = new Point<>(1 - ratio.x, 1 - ratio.y);
         final double scaleX = transform.getScaleX();
-        final double scaleY = transform.getScaleY();
+        final double scaleY = -transform.getScaleY();
         final double sign = Math.signum(1 - value);
-        mn.x -= zoomSpeed * ratio.x * sign / scaleX;
-        mn.y -= zoomSpeed * ratio.y * sign / scaleY;
-        mx.x += zoomSpeed * invert.x * sign / scaleX;
-        mx.y += zoomSpeed * invert.y * sign / scaleY;
+        final double sum = getWidth() + getHeight();
+        final double zoomX = zoomSpeed*getWidth()/sum;
+        final double zoomY = zoomSpeed*getHeight()/sum;
+        mn.x -= zoomX * ratio.x * sign / scaleX;
+        mx.x += zoomX * invert.x * sign / scaleX;
+        mn.y += zoomY * ratio.y * sign / scaleY;
+        mx.y -= zoomY * invert.y * sign / scaleY;
         setView(mn, mx);
     }
 
-    public cz.cvut.linviz.model.basics.Point<Double> positionInView(cz.cvut.linviz.model.basics.Point<Double> point) {
+    public Point<Double> positionInView(Point<Double> point) {
         final AffineTransform viewTransform = settings.getViewTransform();
-        final cz.cvut.linviz.model.basics.Point<Double> res = new cz.cvut.linviz.model.basics.Point<>(0., 0.);
+        final Point<Double> res = new Point<>(0., 0.);
         res.x = (point.x - viewTransform.getTranslateX()) / viewTransform.getScaleX();
         res.y = (point.y - viewTransform.getTranslateY()) / viewTransform.getScaleY();
         return res;
