@@ -50,18 +50,15 @@ public class Painter {
     public void paint(Graphics gg, View view, AffineTransform transform) {
         Graphics2D g = (Graphics2D) gg;
 //        if (view.getFrame() > 0) {
-//            final java.util.List<BaseShape> shapes = model.getShapes(view.getFrame() - 1);
+//            final List<BaseShape> shapes = model.getShapes(view.getFrame() - 1);
 //            g.setColor(new Color(0.2f, 1f, 0.4f, 0.4f));
 //            draw(g, view, transform, shapes);
 //        }
-        {
-            final java.util.List<BaseShape> shapes = model.getShapes(view.getFrame());
-            g.setColor(new Color(1f, 1f, 1f, 0.8f));
-            draw(g, view, transform, shapes);
-        }
+        final List<BaseShape> shapes = model.getShapes(view.getFrame(), view.getSubframe());
+        draw(g, view, transform, shapes);
     }
 
-    private void draw(Graphics2D g, View view, AffineTransform transform, final java.util.List<BaseShape> shapes) {
+    private void draw(Graphics2D g, View view, AffineTransform transform, final List<BaseShape> shapes) {
         for (BaseShape shape : shapes) {
             g.setTransform(transform);
             addTrans(g, shape);
@@ -87,8 +84,9 @@ public class Painter {
 
     @Drawer
     public void drawEllipse(Graphics2D g, Ellipse ellipse) {
+        g.setColor(new Color(1f, 1f, 1f, 0.6f));
         fillOval(g, -ellipse.width / 2, -ellipse.height / 2, ellipse.width, ellipse.height);
-        final double dotSize = 10;
+        final double dotSize = settings.dotSize;
         g.setColor(Color.GREEN);
         AffineTransform viewTransform = settings.getViewTransform();
         double scale = viewTransform.getScaleX();
@@ -99,7 +97,7 @@ public class Painter {
     public void drawLine(Graphics2D g, Line line) {
         AffineTransform viewTransform = settings.getViewTransform();
         double scaleX = viewTransform.getScaleX();
-        Stroke dashed = new BasicStroke((int) (2. / scaleX), BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{(float) (9. / scaleX)}, 0);
+        Stroke dashed = new BasicStroke((int) (1 + 2. / scaleX), BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{(float) (Math.max(40., (9. / scaleX)))}, 0);
         g.setStroke(dashed);
         g.setColor(Color.RED);
         g.drawLine((int) (SCALING * line.a.x), (int) (SCALING * line.a.y),
@@ -113,7 +111,7 @@ public class Painter {
 
     @Drawer
     public void drawVectorShape(Graphics2D g, VectorShape vectorShape) {
-        final java.util.List<Polygon> polygons = vectorShape.getPolygons();
+        final List<Polygon> polygons = vectorShape.getPolygons();
         for (Polygon polygon : polygons) {
             drawPolygon(g, polygon);
         }

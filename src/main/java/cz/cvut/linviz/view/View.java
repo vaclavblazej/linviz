@@ -5,7 +5,6 @@ import cz.cvut.linviz.Settings;
 import cz.cvut.linviz.controller.Controller;
 import cz.cvut.linviz.model.Model;
 import cz.cvut.linviz.model.basics.Point;
-import cz.cvut.linviz.model.things.BaseShape;
 
 import javax.swing.*;
 import javax.swing.Timer;
@@ -18,7 +17,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author Václav Blažej
@@ -33,7 +31,7 @@ public class View extends JPanel implements ActionListener {
     private final AffineTransform defaultTransform = new AffineTransform();
     private final HashMap<Class, Function<String, Object>> conversionMap = new HashMap<>();
     private int fps, fpscnt, targetFps = 20;
-    private int frame;
+    private int frame, subframe;
     private int border = 40;
     private double zoomSpeed = 150;
     private Point<Double> viewCorner;
@@ -52,6 +50,7 @@ public class View extends JPanel implements ActionListener {
         this.timer = new Timer(1000 / targetFps, this);
         fpscnt = 0;
         frame = 0;
+        subframe = 0;
         new Timer(500, e -> {
             fps = 2 * fpscnt;
             fpscnt = 0;
@@ -87,7 +86,9 @@ public class View extends JPanel implements ActionListener {
             y += 20;
             g.drawString("FPS " + fps, 10, y);
             y += 20;
-            g.drawString("FRAME ( " + (frame + 1) + " / " + model.size() + " )", 10, y);
+            g.drawString("FRAME ( " + (frame + 1) + " / " + model.framesSize() + " )", 10, y);
+            y += 20;
+            g.drawString("SUBFRAME ( " + (subframe + 1) + " / " + model.subframesSize(frame) + " )", 10, y);
         }
         if (showCmdline) {
             int padding = 10;
@@ -126,12 +127,28 @@ public class View extends JPanel implements ActionListener {
         repaint();
     }
 
-    public void nextState() {
-        this.frame = Math.min(model.size() - 1, frame + 1);
+    public void next() {
+        final int mxFrame = model.framesSize();
+        final int mxSubframe = model.subframesSize(frame);
+        if (++subframe == mxSubframe) {
+            if (++frame == mxFrame) {
+                frame = mxFrame - 1;
+                subframe = mxSubframe - 1;
+            } else {
+                subframe = 0;
+            }
+        }
     }
 
-    public void prevState() {
-        this.frame = Math.max(0, frame - 1);
+    public void prev() {
+        if (--subframe == -1) {
+            if (--frame == -1) {
+                frame = 0;
+                subframe = 0;
+            } else {
+                subframe = model.subframesSize(frame) - 1;
+            }
+        }
     }
 
     public void toggleCommandline() {
@@ -201,34 +218,47 @@ public class View extends JPanel implements ActionListener {
         return frame;
     }
 
+    public int getSubframe() {
+        return subframe;
+    }
+
     public void center() {
-        final Point<Double> mx = new Point<>(Double.MIN_VALUE, Double.MIN_VALUE);
-        final Point<Double> mn = new Point<>(Double.MAX_VALUE, Double.MAX_VALUE);
-        final java.util.List<BaseShape> shapes = model.getShapes(frame);
-        final List<Point<Double>> points = shapes.stream().map(BaseShape::getPosition).collect(Collectors.toList());
-        final List<Point<Double>> check = new ArrayList<>();
-        for (Point<Double> point : points) {
-            for (int i = -1; i <= 1; i++) {
-                for (int j = -1; j <= 1; j++) {
-                    if (i * i + j * j == 2) {
-                        check.add(new Point<>(point.x + i * border, point.y + j * border));
-                    }
-                }
-            }
-        }
-        for (Point<Double> pt : check) {
-            mx.x = Math.max(mx.x, pt.x);
-            mx.y = Math.max(mx.y, pt.y);
-            mn.x = Math.min(mn.x, pt.x);
-            mn.y = Math.min(mn.y, pt.y);
-        }
-        setView(mn, mx);
+//        final Point<Double> mx = new Point<>(Double.MIN_VALUE, Double.MIN_VALUE);
+//        final Point<Double> mn = new Point<>(Double.MAX_VALUE, Double.MAX_VALUE);
+//        final java.util.List<BaseShape> shapes = model.getShapes(frame);
+//        final List<Point<Double>> points = shapes.stream().map(BaseShape::getPosition).collect(Collectors.toList());
+//        final List<Point<Double>> check = new ArrayList<>();
+//        for (Point<Double> point : points) {
+//            for (int i = -1; i <= 1; i++) {
+//                for (int j = -1; j <= 1; j++) {
+//                    if (i * i + j * j == 2) {
+//                        check.add(new Point<>(point.x + i * border, point.y + j * border));
+//                    }
+//                }
+//            }
+//        }
+//        for (Point<Double> pt : check) {
+//            mx.x = Math.max(mx.x, pt.x);
+//            mx.y = Math.max(mx.y, pt.y);
+//            mn.x = Math.min(mn.x, pt.x);
+//            mn.y = Math.min(mn.y, pt.y);
+//        }
+        setView(new Point<>(0., 0.), new Point<>((double) getWidth(), -(double) getHeight()));
     }
 
     public void setView(Point<Double> mn, Point<Double> mx) {
         final AffineTransform transform = settings.getBaseTransform();
-        Point<Integer> size = new Point<>((int) (mx.x - mn.x), -(int) (mx.y - mn.y));
-        transform.scale(getWidth() / (double) size.x, getHeight() / ((double) size.y));
+        Point<Double> size = new Point<>((mx.x - mn.x), -(mx.y - mn.y));
+        double sx = getWidth() / size.x;
+        double sy = getHeight() / size.y;
+        double inf = Double.POSITIVE_INFINITY;
+        double nan = inf - inf;
+        if (sx == inf || sx == nan || sx == 0) return;
+        if (sy == inf || sy == nan || sy == 0) return;
+        AffineTransform viewTransform = settings.getViewTransform();
+        double scale = viewTransform.getScaleX();
+        if ((int) (settings.dotSize / sx) == 0) return;
+        transform.scale(sx, sx); // intentional, consistency of error
         transform.translate(-mn.x, -mn.y);
         settings.setViewTransform(transform);
         viewCorner.x = mn.x;
@@ -253,15 +283,15 @@ public class View extends JPanel implements ActionListener {
         final Point<Double> ratio = new Point<>(point.x / getWidth(), point.y / getHeight());
         final Point<Double> invert = new Point<>(1 - ratio.x, 1 - ratio.y);
         final double scaleX = transform.getScaleX();
-        final double scaleY = -transform.getScaleY();
+        final double scaleY = transform.getScaleY();
         final double sign = Math.signum(1 - value);
         final double sum = getWidth() + getHeight();
-        final double zoomX = zoomSpeed*getWidth()/sum;
-        final double zoomY = zoomSpeed*getHeight()/sum;
+        final double zoomX = zoomSpeed * getWidth() / sum;
+        final double zoomY = zoomSpeed * getHeight() / sum;
         mn.x -= zoomX * ratio.x * sign / scaleX;
         mx.x += zoomX * invert.x * sign / scaleX;
-        mn.y += zoomY * ratio.y * sign / scaleY;
-        mx.y -= zoomY * invert.y * sign / scaleY;
+        mn.y -= zoomY * ratio.y * sign / scaleY;
+        mx.y += zoomY * invert.y * sign / scaleY;
         setView(mn, mx);
     }
 

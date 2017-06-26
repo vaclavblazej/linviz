@@ -50,8 +50,8 @@ public class Input implements KeyListener, MouseListener, MouseWheelListener, Mo
             final AffineTransform transform = settings.getViewTransform();
             transform.translate(0.0, -speed / transform.getScaleX());
         }); // s
-        keyMap.put(37, view::prevState); // <-
-        keyMap.put(39, view::nextState); // ->
+        keyMap.put(37, view::prev); // <-
+        keyMap.put(39, view::next); // ->
         keyMap.put(67, view::center); // c
         keyMap.put(192, view::toggleCommandline); // ` ~
         exceptions.add(16);

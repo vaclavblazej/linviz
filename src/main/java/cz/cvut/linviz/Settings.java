@@ -11,20 +11,21 @@ import java.util.List;
  */
 public final class Settings implements Serializable {
 
+    private static final AffineTransform BASE_TRANSFORM = AffineTransform.getScaleInstance(1, -1);
     public static DecimalFormat twoDecimalOutputFormat = new DecimalFormat("#.00");
+    public Integer dotSize = 10;
     private volatile List<SettingsListener> listeners = new ArrayList<>();
     private boolean showInfo;
     private AffineTransform viewTransform;
-    private static final AffineTransform BASE_TRANSFORM = AffineTransform.getScaleInstance(1, -1);
-
-    public AffineTransform getBaseTransform(){
-        return new AffineTransform(BASE_TRANSFORM);
-    }
 
     public Settings() {
         this.listeners = new ArrayList<>();
         this.showInfo = true;
         viewTransform = getBaseTransform();
+    }
+
+    public AffineTransform getBaseTransform() {
+        return new AffineTransform(BASE_TRANSFORM);
     }
 
     public void fireSettingsChange() {

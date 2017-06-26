@@ -5,6 +5,7 @@ import cz.cvut.linviz.model.basics.Ellipse;
 import cz.cvut.linviz.model.basics.Line;
 import cz.cvut.linviz.model.basics.Point;
 import cz.cvut.linviz.model.basics.Polygon;
+import cz.cvut.linviz.model.things.BaseShape;
 import cz.cvut.linviz.model.things.Rectangle;
 
 import java.io.InputStream;
@@ -17,6 +18,9 @@ import java.util.Scanner;
  * @author Václav Blažej
  */
 public class StdInput {
+
+    private static boolean background = false;
+
     public static void loadInput(Model model, InputStream in) {
         System.out.println("Getting the input from commandline");
         final InputStreamReader reader = new InputStreamReader(in);
@@ -54,9 +58,19 @@ public class StdInput {
                     break;
                 }
                 case "frame": {
-                    model.addState();
+                    model.addFrame();
                     break;
                 }
+                case "pause": {
+                    model.addSubframe();
+                    break;
+                }
+                case "background": {
+                    background = true;
+                    break;
+                }
+                default:
+                    System.out.println("Draw command '" + command + "' not known");
             }
         }
         System.out.println("finished loading input");
@@ -76,7 +90,7 @@ public class StdInput {
             first = new Point<>(-1000., -c / b);
             second = new Point<>(1000., -c / b);
         }
-        model.addShape(new Line(first, second));
+        addShape(new Line(first, second), model);
     }
 
     private static void addLine(Scanner scanner, Model model) {
@@ -88,7 +102,7 @@ public class StdInput {
         final Point<Double> vector = new Point<>(c, d);
         final Point<Double> first = new Point<>(origin.x - 10 * vector.y, origin.y + 10 * vector.x);
         final Point<Double> second = new Point<>(origin.x + 10 * vector.y, origin.y - 10 * vector.x);
-        model.addShape(new Line(first, second));
+        addShape(new Line(first, second), model);
     }
 
     private static void addPolygonHalfPlane(Scanner scanner, Model model) {
@@ -117,7 +131,7 @@ public class StdInput {
             }
         }
         // pgp 3 3 4 12  -4 -2 -8  2 -6 12
-        model.addShape(polygon);
+        addShape(polygon, model);
     }
 
     private static void addEllipse(Scanner scanner, Model model) {
@@ -128,7 +142,7 @@ public class StdInput {
         final Double width = scanner.nextDouble();
         final Double height = scanner.nextDouble();
         final Ellipse ellipse = new Ellipse(position, rotation, width, height);
-        model.addShape(ellipse);
+        addShape(ellipse, model);
     }
 
     private static void addRectangle(Scanner scanner, Model model) {
@@ -139,7 +153,7 @@ public class StdInput {
         final Double rotation = 0.0;
         final Double size = (double) s;
         final Rectangle shape = new Rectangle(position, rotation, size);
-        model.addShape(shape);
+        addShape(shape, model);
     }
 
     private static void addPolygon(Scanner scanner, Model model) {
@@ -151,7 +165,16 @@ public class StdInput {
             final Point<Double> point = new Point<>(x, y);
             polygon.addPoint(point);
         }
-        model.addShape(polygon);
+        addShape(polygon, model);
+    }
+
+    private static void addShape(BaseShape shape, Model model) {
+        if (background) {
+            model.addBackground(shape);
+            background = false;
+        } else {
+            model.addShape(shape);
+        }
     }
 
     static class HalfPlane {
