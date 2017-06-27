@@ -49,11 +49,6 @@ public class Painter {
 
     public void paint(Graphics gg, View view, AffineTransform transform) {
         Graphics2D g = (Graphics2D) gg;
-//        if (view.getFrame() > 0) {
-//            final List<BaseShape> shapes = model.getShapes(view.getFrame() - 1);
-//            g.setColor(new Color(0.2f, 1f, 0.4f, 0.4f));
-//            draw(g, view, transform, shapes);
-//        }
         final List<BaseShape> shapes = model.getShapes(view.getFrame(), view.getSubframe());
         draw(g, view, transform, shapes);
     }
@@ -126,6 +121,7 @@ public class Painter {
     }
 
     private void fillPolygon(Graphics2D g, List<Point<Double>> points) {
+        g.setColor(new Color(0.2f, 0.7f, 1.0f));
         final java.awt.Polygon p = new java.awt.Polygon();
         for (Point<Double> point : points) {
             p.addPoint((int) (SCALING * point.x), (int) (SCALING * point.y));

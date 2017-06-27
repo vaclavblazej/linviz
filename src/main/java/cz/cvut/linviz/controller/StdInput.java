@@ -130,7 +130,6 @@ public class StdInput {
                 }
             }
         }
-        // pgp 3 3 4 12  -4 -2 -8  2 -6 12
         addShape(polygon, model);
     }
 
