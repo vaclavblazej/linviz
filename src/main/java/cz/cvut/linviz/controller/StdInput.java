@@ -79,17 +79,17 @@ public class StdInput {
     private static void addGeneralLine(Scanner scanner, Model model) {
         final double a = scanner.nextDouble();
         final double b = scanner.nextDouble();
-        final double c = -scanner.nextDouble();
+        final double c = -scanner.nextDouble();//todo fix - -> +
         Point<Double> first, second;
         final Point<Double> dir = new Point<>(-b * 100, a * 100);
-        if (a != 0) {
-            final Point<Double> point = new Point<>(0., -c / b);
-            first = new Point<>(point.x + dir.x, point.y + dir.y);
-            second = new Point<>(point.x - dir.x, point.y - dir.y);
+        Point<Double> point;
+        if (Math.abs(a) > Math.abs(b)) {
+            point = new Point<>(-c / a, 0.);
         } else {
-            first = new Point<>(-1000., -c / b);
-            second = new Point<>(1000., -c / b);
+            point = new Point<>(0., -c / b);
         }
+        first = new Point<>(point.x + dir.x, point.y + dir.y);
+        second = new Point<>(point.x - dir.x, point.y - dir.y);
         addShape(new Line(first, second), model);
     }
 
