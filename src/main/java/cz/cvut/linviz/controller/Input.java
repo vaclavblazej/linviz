@@ -32,8 +32,8 @@ public class Input implements KeyListener, MouseListener, MouseWheelListener, Mo
         this.view = view;
         this.model = model;
         this.settings = settings;
-        keyMap.put(107, () -> view.zoomView(scaleSpeed)); // +
-        keyMap.put(109, () -> view.zoomView(1 / scaleSpeed)); // -
+        keyMap.put(107, () -> view.zoomView(-scaleSpeed)); // +
+        keyMap.put(109, () -> view.zoomView(scaleSpeed)); // -
         keyMap.put(68, () -> {
             final AffineTransform transform = settings.getViewTransform();
             transform.translate(-speed / transform.getScaleX(), 0.0);
@@ -113,9 +113,9 @@ public class Input implements KeyListener, MouseListener, MouseWheelListener, Mo
     public void mouseWheelMoved(MouseWheelEvent e) {
         final Point<Double> point = new Point<>((double) e.getX(), (double) e.getY());
         if (e.getWheelRotation() == 1) {
-            view.zoomView(1 / scaleSpeed, point);
-        } else {
             view.zoomView(scaleSpeed, point);
+        } else {
+            view.zoomView(-scaleSpeed, point);
         }
     }
 

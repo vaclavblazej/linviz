@@ -13,6 +13,8 @@ import java.awt.*;
  */
 public class GameWindow extends JFrame {
 
+    public View view;
+
     public GameWindow(Model model, Controller controller, Settings settings) {
         super("linviz");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -21,16 +23,16 @@ public class GameWindow extends JFrame {
         setFocusable(true);
         setPreferredSize(new Dimension(800,600));
 
-        View gamePlane = new View(model, controller, settings);
-        add(gamePlane);
+        view = new View(model, controller, settings);
+        add(view);
         pack();
 
-        Input input = new Input(gamePlane, model, settings);
+        Input input = new Input(view, model, settings);
         this.addKeyListener(input);
         this.addMouseListener(input);
-        gamePlane.addKeyListener(input);
-        gamePlane.addMouseListener(input);
-        gamePlane.addMouseWheelListener(input);
-        gamePlane.addMouseMotionListener(input);
+        view.addKeyListener(input);
+        view.addMouseListener(input);
+        view.addMouseWheelListener(input);
+        view.addMouseMotionListener(input);
     }
 }

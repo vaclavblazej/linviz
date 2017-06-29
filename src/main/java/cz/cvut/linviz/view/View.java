@@ -256,22 +256,35 @@ public class View extends JPanel implements ActionListener {
         zoomView(value, new Point<>(getWidth() / 2d, getHeight() / 2d));
     }
 
+    public void setViewZoom(double value) {
+        final Point<Double> mn = new Point<>(viewCorner);
+        final Point<Double> mx = positionInView(new Point<>((double) getWidth(), (double) getHeight()));
+        final Point<Double> md = new Point<>((mn.x + mx.x) / 2, (mn.y + mx.y) / 2);
+        final double sum = getWidth() + getHeight();
+        final double mainX = zoomSpeed * getWidth() / sum;
+        final double mainY = zoomSpeed * getHeight() / sum;
+        mn.x = md.x - mainX * value;
+        mx.x = md.x + mainX * value;
+        mn.y = md.y + mainY * value;
+        mx.y = md.y - mainY * value;
+        setView(mn, mx);
+    }
+
     public void zoomView(double value, Point<Double> point) {
         final Point<Double> mn = new Point<>(viewCorner);
         final Point<Double> mx = positionInView(new Point<>((double) getWidth(), (double) getHeight()));
-        final AffineTransform transform = settings.getViewTransform();
         final Point<Double> ratio = new Point<>(point.x / getWidth(), point.y / getHeight());
         final Point<Double> invert = new Point<>(1 - ratio.x, 1 - ratio.y);
+        final AffineTransform transform = settings.getViewTransform();
         final double scaleX = transform.getScaleX();
         final double scaleY = transform.getScaleY();
-        final double sign = Math.signum(1 - value);
         final double sum = getWidth() + getHeight();
         final double zoomX = zoomSpeed * getWidth() / sum;
         final double zoomY = zoomSpeed * getHeight() / sum;
-        mn.x -= zoomX * ratio.x * sign / scaleX;
-        mx.x += zoomX * invert.x * sign / scaleX;
-        mn.y -= zoomY * ratio.y * sign / scaleY;
-        mx.y += zoomY * invert.y * sign / scaleY;
+        mn.x -= zoomX * ratio.x * value / scaleX;
+        mx.x += zoomX * invert.x * value / scaleX;
+        mn.y -= zoomY * ratio.y * value / scaleY;
+        mx.y += zoomY * invert.y * value / scaleY;
         setView(mn, mx);
     }
 

@@ -7,6 +7,7 @@ import cz.cvut.linviz.model.basics.Point;
 import cz.cvut.linviz.model.basics.Polygon;
 import cz.cvut.linviz.model.things.BaseShape;
 import cz.cvut.linviz.model.things.Rectangle;
+import cz.cvut.linviz.view.View;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -21,7 +22,7 @@ public class StdInput {
 
     private static boolean background = false;
 
-    public static void loadInput(Model model, InputStream in) {
+    public static void loadInput(Model model, View view, InputStream in) {
         System.out.println("Getting the input from commandline");
         final InputStreamReader reader = new InputStreamReader(in);
         final Scanner scanner = new Scanner(reader);
@@ -67,6 +68,10 @@ public class StdInput {
                 }
                 case "background": {
                     background = true;
+                    break;
+                }
+                case "zoom": {
+                    view.setViewZoom(scanner.nextDouble());
                     break;
                 }
                 default:

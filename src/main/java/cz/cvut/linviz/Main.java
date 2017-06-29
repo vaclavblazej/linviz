@@ -14,7 +14,7 @@ public class Main {
         Settings settings = new Settings();
         Model model = new Model(settings);
         Controller controller = new Controller(model, settings);
-        new GameWindow(model, controller, settings);
-        StdInput.loadInput(model, System.in);
+        final GameWindow window = new GameWindow(model, controller, settings);
+        StdInput.loadInput(model, window.view, System.in);
     }
 }
