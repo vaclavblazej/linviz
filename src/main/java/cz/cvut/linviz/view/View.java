@@ -223,26 +223,6 @@ public class View extends JPanel implements ActionListener {
     }
 
     public void center() {
-//        final Point<Double> mx = new Point<>(Double.MIN_VALUE, Double.MIN_VALUE);
-//        final Point<Double> mn = new Point<>(Double.MAX_VALUE, Double.MAX_VALUE);
-//        final java.util.List<BaseShape> shapes = model.getShapes(frame);
-//        final List<Point<Double>> points = shapes.stream().map(BaseShape::getPosition).collect(Collectors.toList());
-//        final List<Point<Double>> check = new ArrayList<>();
-//        for (Point<Double> point : points) {
-//            for (int i = -1; i <= 1; i++) {
-//                for (int j = -1; j <= 1; j++) {
-//                    if (i * i + j * j == 2) {
-//                        check.add(new Point<>(point.x + i * border, point.y + j * border));
-//                    }
-//                }
-//            }
-//        }
-//        for (Point<Double> pt : check) {
-//            mx.x = Math.max(mx.x, pt.x);
-//            mx.y = Math.max(mx.y, pt.y);
-//            mn.x = Math.min(mn.x, pt.x);
-//            mn.y = Math.min(mn.y, pt.y);
-//        }
         setView(new Point<>(0., 0.), new Point<>((double) getWidth(), -(double) getHeight()));
     }
 

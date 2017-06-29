@@ -114,21 +114,52 @@ public class StdInput {
             double b = scanner.nextDouble();
             planes.add(new HalfPlane(x, y, b));
         }
-        final Polygon polygon = new Polygon();
-        for (int i = 0; i < count; i++) {
+        int border = 10000;
+        planes.add(new HalfPlane(1, 0, border));
+        planes.add(new HalfPlane(-1, 0, border));
+        planes.add(new HalfPlane(0, 1, border));
+        planes.add(new HalfPlane(0, -1, border));
+        List<Point<Double>> points = new ArrayList<>();
+        List<Point<Double>> finalPoints = new ArrayList<>();
+        for (int i = 0; i < planes.size(); i++) {
             for (int j = 0; j < i; j++) {
-                final Point<Double> point = planes.get(i).intersect(planes.get(j));
-                boolean flag = true;
-                for (int k = 0; k < count; k++) {
-                    if (!planes.get(k).check(point)) {
-                        flag = false;
-                        break;
-                    }
-                }
-                if (flag) {
-                    polygon.addPoint(point);
+                points.add(planes.get(i).intersect(planes.get(j)));
+            }
+        }
+        final Polygon polygon = new Polygon();
+        for (Point<Double> point : points) {
+            boolean flag = true;
+            for (HalfPlane plane : planes) {
+                if (!plane.check(point)) {
+                    flag = false;
+                    break;
                 }
             }
+            if (flag) {
+                finalPoints.add(point);
+            }
+        }
+        int sz = finalPoints.size();
+        for (int i = 0; i < finalPoints.size(); i++) {
+            int j = i;
+            while (j>=0) {
+                final Point<Double> a = finalPoints.get(j);
+                final Point<Double> b = finalPoints.get((j - 1 + sz) % sz);
+                final Point<Double> c = finalPoints.get((j - 2 + sz) % sz);
+                final Point<Double> d = new Point<>(b.x - a.x, b.y - a.y);
+                final Point<Double> e = new Point<>(c.x - a.x, c.y - a.y);
+                double res = d.x * e.y - e.x * d.y;
+                if (res > 0) {
+                    finalPoints.set(j, b);
+                    finalPoints.set((j - 1 + sz) % sz, a);
+                    --j;
+                } else {
+                    break;
+                }
+            }
+        }
+        for (Point<Double> point : finalPoints) {
+            polygon.addPoint(point);
         }
         addShape(polygon, model);
     }

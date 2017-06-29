@@ -19,6 +19,7 @@ public class GameWindow extends JFrame {
         setVisible(true);
         setLayout(new BorderLayout());
         setFocusable(true);
+        setPreferredSize(new Dimension(800,600));
 
         View gamePlane = new View(model, controller, settings);
         add(gamePlane);

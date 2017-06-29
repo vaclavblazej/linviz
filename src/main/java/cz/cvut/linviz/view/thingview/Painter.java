@@ -95,8 +95,6 @@ public class Painter {
         Stroke dashed = new BasicStroke((int) (1 + 2. / scaleX), BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{(float) (Math.max(40., (9. / scaleX)))}, 0);
         g.setStroke(dashed);
         g.setColor(Color.RED);
-        System.out.println(line.a.x + " a " + line.a.y);
-        System.out.println(line.b.x + " b " + line.b.y);
         g.drawLine((int) (SCALING * line.a.x), (int) (SCALING * line.a.y),
                 (int) (SCALING * line.b.x), (int) (SCALING * line.b.y));
     }
