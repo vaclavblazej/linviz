@@ -5,7 +5,7 @@ Java based visualization tool for basic geometric shapes with standard input.
 ## How to install and run
 To download and build the project:
 
-    git clone git@github.com:vaclavblazej/linviz.git
+    git clone https://github.com/vaclavblazej/linviz.git
     cd linviz
     mvn package
 
