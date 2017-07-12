@@ -43,7 +43,7 @@ Feel free to add issues and issue merge/pull requests.
 ## Examples
 We used this project to show how ellipsoid method functions, therefore the example is a run of this method.
 
-#### Ellipsoid method
+#### Example input - Ellipsoid method
 
     background pgp 3 3 4 12 2 -6 12 -4 -2 -9
     zoom 1024
@@ -114,6 +114,13 @@ We used this project to show how ellipsoid method functions, therefore the examp
     el 2.87001 0.142355 -0.773145 26.5909 8.66536
     frame
     el 2.87001 0.142355 -0.773145 26.5909 8.66536
+
+#### Example run
+The gif shows running the program using commandline.
+Then we paste the example input as input to the program.
+The program shows the first frame with initial ellipsoid and polygon.
+Using mouse we can move around.
+Using right arrow we move to the next frame in the animation.
 
 ![](./rdm/lin.gif?raw=true)
 
