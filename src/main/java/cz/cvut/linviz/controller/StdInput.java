@@ -28,7 +28,7 @@ public class StdInput {
         final Scanner scanner = new Scanner(reader);
 
         loop:
-        while (true) {
+        while (scanner.hasNext()) {
             final String command = scanner.next();
             switch (command) {
                 case "exit": {
