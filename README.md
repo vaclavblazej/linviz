@@ -1,4 +1,4 @@
-#Lin vizualizer
+# Lin vizualizer
 
 Java based visualization tool for basic geometric shapes with standard input.
 
@@ -114,3 +114,6 @@ We used this project to show how ellipsoid method functions, therefore the examp
     el 2.87001 0.142355 -0.773145 26.5909 8.66536
     frame
     el 2.87001 0.142355 -0.773145 26.5909 8.66536
+
+![](./rdm/lin.gif?raw=true)
+
